@@ -89,36 +89,38 @@ describe('Node.js version reference scanner', () => {
     await fs.unlink(testFile);
   });
 
-  test('finds Node.js version references that are not LTS', async () => {
+  test('matches all positive (non-LTS) Node.js version references', async () => {
     const matches = await scanMarkdownFile(testFile);
-    // Print all matches for debug
     console.log('Matches:', matches);
-    // Case-insensitive, substring match
-    const passedPositives: string[] = [];
-    const failedPositives: string[] = [];
+    const passed: string[] = [];
+    const failed: string[] = [];
     for (const str of positiveCases) {
       if (matches.some(m => m.toLowerCase().includes(str.toLowerCase()))) {
-        passedPositives.push(str);
+        passed.push(str);
       } else {
-        failedPositives.push(str);
+        failed.push(str);
       }
     }
-    const passedLTS: string[] = [];
-    const failedLTS: string[] = [];
+    console.log('--- Positive Cases should find---');
+    passed.forEach(str => console.log(`✅ ${str}`));
+    failed.forEach(str => console.error(`❌ ${str}`));
+    expect(failed).toEqual([]);
+  });
+
+  test('does not match LTS/negative cases', async () => {
+    const matches = await scanMarkdownFile(testFile);
+    const passed: string[] = [];
+    const failed: string[] = [];
     for (const str of ltsCases) {
       if (matches.some(m => m.toLowerCase().includes(str.toLowerCase()))) {
-        failedLTS.push(str);
+        failed.push(str);
       } else {
-        passedLTS.push(str);
+        passed.push(str);
       }
     }
-    console.log('--- Positive Cases ---');
-    passedPositives.forEach(str => console.log(`✅ ${str}`));
-    failedPositives.forEach(str => console.error(`❌ ${str}`));
-    console.log('--- LTS Cases ---');
-    passedLTS.forEach(str => console.log(`✅ ${str}`));
-    failedLTS.forEach(str => console.error(`❌ ${str}`));
-    expect(failedPositives).toEqual([]);
-    expect(failedLTS).toEqual([]);
+    console.log('--- LTS/Negative Cases should not find ---');
+    passed.forEach(str => console.log(`✅ ${str}`));
+    failed.forEach(str => console.error(`❌ ${str}`));
+    expect(failed).toEqual([]);
   });
 });
